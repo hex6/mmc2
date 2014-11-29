@@ -3,20 +3,26 @@ var request = require('request-json');
 var apiKey = 'es+XLozfQucTw1amMoCm0xnSIpo=';
 var teamName = 'Music Benders';
 var gameId = process.argv[2];
+if(!gameId) {
+	console.error('Missing game ID!');
+	process.exit(1);
+}
 
 var url = 'http://competition.monkeymusicchallenge.com/game';
 
 var client = request.newClient(url);
 
-var json = {
+var join = {
 	command: 'join game',
 	apiKey: apiKey,
 	gameId: gameId,
 	team: teamName
 }
 
-client.post(url, json, handleResponseLoop);
+// Join the game!
+client.post(url, join, handleResponseLoop);
 
+var ai = require('./ai');
 
 function handleResponseLoop(err, res, resBody) {
 	if(err) {
@@ -28,5 +34,15 @@ function handleResponseLoop(err, res, resBody) {
 		process.exit(1);
 	}
 
-	console.log(resBody);
+	var state = resBody;
+	console.log(state);
+
+	// AI STUFF
+	var next = ai.next(state);
+	next.apiKey = apiKey;
+	next.team = teamName;
+	next.gameId = gameId;
+
+	// Send the data!
+	client.post(url, next, handleResponseLoop);
 };

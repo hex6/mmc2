@@ -1,0 +1,19 @@
+{
+  "name": "mmc2",
+  "version": "1.0.0",
+  "description": "mmc2",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hex6/mmc2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hex6/mmc2/issues"
+  },
+  "homepage": "https://github.com/hex6/mmc2"
+}

@@ -17,7 +17,7 @@ var join = {
 	apiKey: apiKey,
 	gameId: gameId,
 	team: teamName
-}
+};
 
 // Join the game!
 client.post(url, join, handleResponseLoop);
@@ -27,15 +27,19 @@ var ai = require('./ai');
 function handleResponseLoop(err, res, resBody) {
 	if(err) {
 		console.error('Oh noes, error:', err.name, err.message);
-		process.exit(1);
+		return;
 	}
 	if(res.statusCode != 200) {
-		console.error('Oh noes, the server responded with:', res.statusCode);
-		process.exit(1);
+		console.error('Oh noes, the server responded with:', res.statusCode, resBody);
+		return;
 	}
 
 	var state = resBody;
-	console.log(state);
+
+	if(state.isGameOver) {
+		console.log('Game is over, we', state.win ? 'won :D' : 'lost :(');
+		return;
+	}
 
 	// AI STUFF
 	var next = ai.next(state);
@@ -43,6 +47,7 @@ function handleResponseLoop(err, res, resBody) {
 	next.team = teamName;
 	next.gameId = gameId;
 
+	console.log('Sending json:', next);
 	// Send the data!
 	client.post(url, next, handleResponseLoop);
-};
+}

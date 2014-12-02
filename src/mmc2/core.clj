@@ -36,5 +36,4 @@
               url
               (into
                 data
-                {:command "move"
-                 :direction (rand-nth '("left" "right" "up" "down"))}))))))))
+                (ai/move state)))))))))

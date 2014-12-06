@@ -1,10 +1,11 @@
-(ns mmc2.pathfinding)
+(ns mmc2.pathfinding
+  (:require [clojure.set]))
 
 (def directions
-  {"right" [ 1  0]
-   "left"  [-1  0]
-   "down"  [ 0  1]
-   "up"    [ 0 -1]})
+  {"down" [ 1  0]
+   "up"  [-1  0]
+   "right"  [ 0  1]
+   "left"    [ 0 -1]})
 
 
 (defn translate-coords
@@ -12,23 +13,33 @@
   [[x y] [dx dy]]
   [(+ x dx) (+ y dy)])
 
+(defn neighbour-coords
+  [coord]
+  (map translate-coords (repeat coord) (vals directions)))
+
+(defn walkable
+  [layout coord]
+  (not= "wall" (get-in layout coord "wall")))
 
 (defn neighbours
+  "Returns map of neighbour coords which is not a wall and their parent coords."
   [layout coord]
-  (let [neighbour-coords (map translate-coords (repeat coord) (vals directions))]
-    (filter #(not= "wall" (get-in layout (reverse %) "wall")) neighbour-coords)))
+  (if (walkable layout coord)
+    (let [walkable-coords (filter #(walkable layout %) (neighbour-coords coord))]
+      (map #(hash-map % coord) walkable-coords))
+    ()))
 
 
 (defn flood-fill
   [layout coord]
-  (loop [visited #{}
-         open #{coord}]
-    (if (seq open)
-      (let [current (first open)
-            visited (conj visited current)
-            open (disj open current)
-            candidates (set (neighbours layout coord))
-            open (clojure.set/union open (clojure.set/difference candidates visited))]
-        (recur visited open))
+  (loop [visited {}
+         frontier {coord nil}]
+    (if (seq frontier)
+      (let [current (first frontier)
+            frontier (dissoc frontier (key current))
+            visited (merge visited current)
+            candidates (first (neighbours layout coord))
+            frontier (merge frontier (apply dissoc candidates (keys visited)))]
+        (recur visited frontier))
       visited)))
 

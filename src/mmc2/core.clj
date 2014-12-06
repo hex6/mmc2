@@ -22,6 +22,9 @@
           (json/read-str body))))
 
 
+(defn pretty-map
+  [layout])
+  
 
 (defn -main
   [game-id & args]

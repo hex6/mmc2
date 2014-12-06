@@ -9,7 +9,6 @@
 
 
 (defn translate-coords
-  "Takes x and y coordinates and translates that with delta x and y."
   [[x y] [dx dy]]
   [(+ x dx) (+ y dy)])
 
@@ -22,11 +21,10 @@
   (not= "wall" (get-in layout coord "wall")))
 
 (defn neighbours
-  "Returns map of neighbour coords which is not a wall and their parent coords."
   [layout coord]
   (if (walkable layout coord)
     (let [walkable-coords (filter #(walkable layout %) (neighbour-coords coord))]
-      (map #(hash-map % coord) walkable-coords))
+      (zipmap walkable-coords (repeat coord)))
     ()))
 
 
@@ -38,8 +36,14 @@
       (let [current (first frontier)
             frontier (dissoc frontier (key current))
             visited (merge visited current)
-            candidates (first (neighbours layout coord))
-            frontier (merge frontier (apply dissoc candidates (keys visited)))]
+            candidates (neighbours layout (key current))
+            frontier (merge frontier (apply dissoc candidates (keys visited)))
+            item (get-in layout (key current))]
+        ;(cond
+          ;(= "song" item)
+          ;(= "album" item)
+          ;(= "playlist" item)
+          ;(= "banana" item)
         (recur visited frontier))
       visited)))
 

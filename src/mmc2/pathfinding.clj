@@ -1,5 +1,6 @@
 (ns mmc2.pathfinding
-  (:require [clojure.set]))
+  (:require [clojure.set]
+            [flatland.ordered.map :as ordered]))
 
 (def directions
   {[ 1  0] "down" 
@@ -11,9 +12,9 @@
   {"song" 1
    "album" 2
    "playlist" 4
-   "banana" 5
-   "trap" 0
-   "user" -1
+   "banana" 4
+   "trap" 1
+   "user" 4
    "monkey" 0})
 
 
@@ -60,7 +61,7 @@
 (defn flood-fill
   [layout coord]
   (loop [visited {}
-         frontier {coord nil}
+         frontier (ordered/ordered-map coord nil)
          paths []]
     (if (seq frontier)
       (let [current (first frontier)
@@ -69,13 +70,17 @@
             visited (merge visited current)
             candidates (neighbours layout (key current))
             frontier (if (or (= "empty" item) (= "monkey" item))
-                       (merge frontier (apply dissoc candidates (keys visited)))
+                       (let [front (apply dissoc candidates (keys visited))]
+                         (into frontier front))
                        frontier)
-            back (backtrace-path visited (key current))
             paths (if (and (not= "empty" item) (not= "monkey" item))
-                    (conj paths {:coord(key current)
-                                 :path (path-to-dirs back)
-                                 :points (points item)})
+                    (let [path (path-to-dirs (backtrace-path visited (key current)))
+                          user (= "user" item)]
+                      (conj paths {:origcoord coord
+                                   :destcoord (key current)
+                                   :path path
+                                   :user user
+                                   :points (/ (if (nil? (points item)) 0 (points item)) (count path))}))
                     paths)]
         (recur visited frontier paths))
       paths)))

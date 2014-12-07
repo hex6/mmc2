@@ -33,15 +33,10 @@
      :gameId game-id
      :team team-name})
 
-  (loop [state (post-to-server url (into data {:command "join game"}))
-         path []
-         prio false]
+  (loop [state (post-to-server url (into data {:command "join game"}))]
     (if (get state "isGameOver" true)
       (println "Game over:" state)
       (do
         (println "Remaining turns:" (get state "remainingTurns"))
-        (let [move (ai/move state path prio)
-              state (:state move)
-              path (:path move)
-              prio (:prio move)]
-          (recur (post-to-server url (into data state)) path prio))))))
+        (let [state (ai/move state)]
+          (recur (post-to-server url (into data state))))))))
